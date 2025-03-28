@@ -1,4 +1,4 @@
 package org.example.watchfinder.service;
 
-public class SerieService {
+public interface SerieService {
 }

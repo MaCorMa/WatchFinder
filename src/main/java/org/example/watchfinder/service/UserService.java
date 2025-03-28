@@ -1,4 +1,4 @@
 package org.example.watchfinder.service;
 
-public class UsuarioServiceImpl {
+public interface UserService {
 }

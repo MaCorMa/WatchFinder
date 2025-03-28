@@ -1,4 +1,4 @@
 package org.example.watchfinder.service;
 
-public class PeliculaServiceImpl {
+public class PeliculaServiceImpl implements PeliculaService{
 }
