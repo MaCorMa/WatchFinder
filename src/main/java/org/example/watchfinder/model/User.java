@@ -2,16 +2,23 @@ package org.example.watchfinder.model;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
+import java.io.Serializable;
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Document(collection = "Users")
-public class User {
+public class User implements UserDetails {
 
     @Id
     private String _id;
     private String name;
-    private String nick;
+    private String username;
     private String password;
     private String email;
     private List<Movie> likedMovies;
@@ -23,22 +30,26 @@ public class User {
     private List<Movie> favMovies;
     private List<Series> favSeries;
     private List<String> achievements;
+    private Set<String> roles;
 
     public User() {}
 
-    public User(String name, String nick, String password, String email) {
-        this.name = name;
-        this.nick = nick;
-        this.password = password;
-        this.email = email;
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return this.roles.stream()
+                .map(role -> new SimpleGrantedAuthority("ROLE_"+role))
+                .collect(Collectors.toList());
     }
 
-    public String get_id() {
-        return _id;
+    @Override
+    public String getPassword() {
+        return this.password;
     }
 
-    public void set_id(String _id) {
-        this._id = _id;
+    @Override
+    public String getUsername() {
+        return this.username;
     }
 
     public String getName() {
@@ -47,22 +58,6 @@ public class User {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public String getNick() {
-        return nick;
-    }
-
-    public void setNick(String nick) {
-        this.nick = nick;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
     }
 
     public String getEmail() {
@@ -145,3 +140,4 @@ public class User {
         this.achievements = achievements;
     }
 }
+
