@@ -5,12 +5,13 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.List;
 
-@Document
+@Document(collection = "Users")
 public class User {
 
     @Id
     private String _id;
     private String name;
+    private String nick;
     private String password;
     private String email;
     private List<Movie> likedMovies;
@@ -22,6 +23,15 @@ public class User {
     private List<Movie> favMovies;
     private List<Series> favSeries;
     private List<String> achievements;
+
+    public User() {}
+
+    public User(String name, String nick, String password, String email) {
+        this.name = name;
+        this.nick = nick;
+        this.password = password;
+        this.email = email;
+    }
 
     public String get_id() {
         return _id;
@@ -37,6 +47,14 @@ public class User {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getNick() {
+        return nick;
+    }
+
+    public void setNick(String nick) {
+        this.nick = nick;
     }
 
     public String getPassword() {
