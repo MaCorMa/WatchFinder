@@ -27,19 +27,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     @Override
+    //Cuando construyamos el filter chain, este filtro se lo vamos a pasar y es el que asegura que el user esté autenticado.
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
         try{
-
+            //Aqui se parsea la request, saca el token, y luego el username mediante ese token. Con ese username obitene los datos del usuario
             String jwt = parseJwt(request);
 
             if(jwt != null && jwtUtil.validateToken(jwt)){
                 String username = jwtUtil.getUserNameFromJwtToken(jwt);
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
+                //Aquí creamos el objeto este, le pasamos los datos del usuario, las credencialles en null porque ya hemos validado el token, y los roles (porque lo dice spring)
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                //Esto extrae datos adicionales, como la IP
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
+                //Una vez está a punto, le decimos a Spring "para esta petición, este user está autenticado y tiene X permisos"
+                //Como decirle al portero "viene conmigo"
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
 
@@ -49,6 +53,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
+    //Esto es lo que verifica que las peticiones tengan en la cabecera el Bearer (token). Recupera el header de autorización, y
+    //si tiene texto y empieza con "Bearer " (espacio final, ojito), saca lo que viene después, que debería ser el token. Y si no, null y pa tu casa.
     private String parseJwt(HttpServletRequest request) {
 
         String headerAuth = request.getHeader("Authorization");

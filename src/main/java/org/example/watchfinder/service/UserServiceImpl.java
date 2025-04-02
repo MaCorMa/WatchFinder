@@ -13,11 +13,23 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User registerUser(User user) {
-        if (userRepository.existsByEmail(user.getEmail()) || userRepository.existsByNick(user.getNick())) {
+        if (userRepository.existsByEmail(user.getEmail()) || userRepository.existsByUsername(user.getUsername())) {
             return null;
         } else {
             userRepository.save(user);
             return user;
         }
     }
+
+    @Override
+    public boolean existsByUsername(String username) {
+        return userRepository.existsByUsername(username);
+    }
+
+    @Override
+    public boolean existsByEmail(String email) {
+        return userRepository.existsByEmail(email);
+    }
+
+
 }

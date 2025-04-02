@@ -34,6 +34,11 @@ public class User implements UserDetails {
 
     public User() {}
 
+    public User(String username, String password, String email) {
+        this.username = username;
+        this.password = password;
+        this.email = email;
+    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -138,6 +143,14 @@ public class User implements UserDetails {
 
     public void setAchievements(List<String> achievements) {
         this.achievements = achievements;
+    }
+
+    public Set<String> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(Set<String> roles) {
+        this.roles = roles;
     }
 }
 

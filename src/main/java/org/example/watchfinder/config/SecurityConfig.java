@@ -44,6 +44,8 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationProvider authenticationProvider() {
+        //Cuando vayamos a setear el authentication provider en filterChain(), vamos a llamar a este método,
+        //que lo único que hace es devolver un authProvider al que le hemos seteado los detalles del usuario y le hemos dicho donde está el password encoder.
         DaoAuthenticationProvider authP = new DaoAuthenticationProvider();
         authP.setUserDetailsService(userDetailsService);
         authP.setPasswordEncoder(passWordEncoder());
@@ -62,6 +64,10 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, CorsConfigurationSource corsConfigurationSource) throws Exception {
+        //Aquí definimos las reglas del filtro, la configuración de las cors, qué pasa si hay una excepción, manejo de la sesión e
+        //IMPORTANTE: los permisos sobre qué peticiones se pueden hacer, para auth/ siempre damos permisos para que todo el mundo pueda logearse/registrarse
+        //Cualquier otra (anyrequest.) tienen que estar autenticados (autheticated)
+        //La sesión es Stateless porque no se guarda en el server, se valida con el token
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
