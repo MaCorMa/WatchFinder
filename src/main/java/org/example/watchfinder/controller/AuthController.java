@@ -16,12 +16,10 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 @RestController
@@ -85,8 +83,17 @@ public class AuthController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + e.getMessage());
         }
-
-
     }
+
+    @GetMapping("/validate")
+    public ResponseEntity<?> validateToken(Authentication authentication) {
+        // Si este método se ejecuta, el filtro JWT ya validó el token.
+        // Authentication no será null y estará 'authenticated'.
+        // Simplemente devolvemos OK. Opcionalmente, datos del usuario.
+        String username = authentication.getName(); // Obtener username del token validado
+        // Puedes devolver solo OK, o un objeto con datos básicos.
+        return ResponseEntity.ok(Map.of("status", "valid", "username", username));
+    }
+
 
 }

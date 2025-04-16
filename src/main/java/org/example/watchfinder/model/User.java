@@ -7,6 +7,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -21,15 +22,15 @@ public class User implements UserDetails {
     private String username;
     private String password;
     private String email;
-    private List<Movie> likedMovies;
-    private List<Movie> dislikedMovies;
-    private List<Series> likedSeries;
-    private List<Series> dislikedSeries;
-    private List<Movie> seenMovies;
-    private List<Series> seenSeries;
-    private List<Movie> favMovies;
-    private List<Series> favSeries;
-    private List<String> achievements;
+    private List<Movie> likedMovies = new ArrayList<>();
+    private List<Movie> dislikedMovies = new ArrayList<>();
+    private List<Series> likedSeries = new ArrayList<>();
+    private List<Series> dislikedSeries = new ArrayList<>();
+    private List<Movie> seenMovies = new ArrayList<>();
+    private List<Series> seenSeries = new ArrayList<>();
+    private List<Movie> favMovies = new ArrayList<>();
+    private List<Series> favSeries = new ArrayList<>();
+    private List<String> achievements = new ArrayList<>();
     private Set<String> roles;
 
     public User() {}
@@ -45,6 +46,34 @@ public class User implements UserDetails {
         return this.roles.stream()
                 .map(role -> new SimpleGrantedAuthority("ROLE_"+role))
                 .collect(Collectors.toList());
+    }
+
+    public void addToLikedMovies(Movie movie){
+        this.likedMovies.add(movie);
+    }
+    public void addToLikedSeries(Series series){
+        this.likedSeries.add(series);
+    }
+
+    public void addToDislikedMovies(Movie movie){
+        this.dislikedMovies.add(movie);
+    }
+    public void addToDislikedSeries(Series series){
+        this.dislikedSeries.add(series);
+    }
+
+    public void addToSeenMovies(Movie movie){
+        this.seenMovies.add(movie);
+    }
+    public void addToSeenSeries(Series series){
+        this.seenSeries.add(series);
+    }
+
+    public void addToFavMovies(Movie movie){
+        this.favMovies.add(movie);
+    }
+    public void addToFavSeries(Series series){
+        this.favSeries.add(series);
     }
 
     @Override
