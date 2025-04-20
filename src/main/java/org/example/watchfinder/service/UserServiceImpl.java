@@ -2,14 +2,18 @@ package org.example.watchfinder.service;
 
 import org.example.watchfinder.dto.Item;
 import org.example.watchfinder.model.Movie;
+import org.example.watchfinder.model.PasswordResetToken;
 import org.example.watchfinder.model.Series;
 import org.example.watchfinder.model.User;
 import org.example.watchfinder.repository.MovieRepository;
+import org.example.watchfinder.repository.PasswordResetTokenRepository;
 import org.example.watchfinder.repository.SeriesRepository;
 import org.example.watchfinder.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.Optional;
 
 @Service
@@ -21,6 +25,14 @@ public class UserServiceImpl implements UserService {
     private MovieRepository movieRepository;
     @Autowired
     private SeriesRepository seriesRepository;
+
+    //Para el reset de la contraseña
+    @Autowired
+    private PasswordResetTokenRepository passwordTokenRepository;
+    @Autowired
+    private EmailService emailService;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Override
     public User updateUser(User user) {
@@ -41,6 +53,9 @@ public class UserServiceImpl implements UserService {
     public Optional<User> findByUsername(String username) {
         return userRepository.findByUsername(username);
     }
+
+    @Override
+    public Optional<User> findByEmail(String mail) {return userRepository.findByEmail(mail);}
 
     @Override
     public boolean existsByUsername(String username) {
@@ -122,5 +137,39 @@ public class UserServiceImpl implements UserService {
         return false;
     }
 
+    @Override
+    public void createPasswordResetToken(User user, String token) {
+        PasswordResetToken myToken = new PasswordResetToken(token, user.getUsername());
+        passwordTokenRepository.save(myToken);
+    }
 
+    @Override
+    public boolean validatePasswordResetToken(String token) {
+        PasswordResetToken passToken = passwordTokenRepository.findByToken(token);
+
+        if (passToken == null) {
+            return false;
+        }
+
+        Instant now = Instant.now();
+        Instant expiry = passToken.getExpiryDate().toInstant();
+
+        if (expiry.isBefore(now) || expiry.equals(now)) {
+            passwordTokenRepository.delete(passToken);   //limpia token si ha expirado
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public Optional<User> getUserByPasswordResetToken(String token) {
+        PasswordResetToken passToken = passwordTokenRepository.findByToken(token);
+        return passToken == null ? Optional.empty() : userRepository.findById(passToken.getUserId());
+    }
+
+    @Override
+    public void changePassword(User user, String newPassword) {
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+    }
 }
