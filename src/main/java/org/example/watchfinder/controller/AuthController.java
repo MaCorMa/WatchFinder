@@ -71,7 +71,7 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Error: Username is already in use");
         }
 
-        User user = new User(registerRequest.getUsername(), passwordEncoder.encode(registerRequest.getPassword()), registerRequest.getEmail());
+        User user = new User(registerRequest.getUsername(), registerRequest.getName(), passwordEncoder.encode(registerRequest.getPassword()), registerRequest.getEmail());
         Set<String> defaultRoles = new HashSet<>();
         defaultRoles.add("USER");
         user.setRoles(defaultRoles);
