@@ -41,7 +41,7 @@ public class JwtUtil {
     }
 
     public String generateTokenFromUsername(String username, String roles) {
-
+       /*
         Date now = new Date();
         Date expire = new Date(now.getTime() + jwtExpirationInMs);
         return Jwts.builder()
@@ -51,6 +51,29 @@ public class JwtUtil {
                 .expiration(expire)
                 .signWith(key())
                 .compact();
+        */
+        try {
+            System.out.println("Generating token for username: " + username);
+            System.out.println("With roles: " + roles);
+
+            Date now = new Date();
+            Date expire = new Date(now.getTime() + jwtExpirationInMs);
+
+            String token = Jwts.builder()
+                    .subject(username)
+                    .claim("roles", roles)
+                    .issuedAt(now)
+                    .expiration(expire)
+                    .signWith(key())
+                    .compact();
+
+            System.out.println("Token generated successfully");
+            return token;
+        } catch (Exception e) {
+            System.err.println("Error generating token: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
+        }
     }
 
     public String getUserNameFromJwtToken(String token) {

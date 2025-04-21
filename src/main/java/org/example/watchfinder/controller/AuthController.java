@@ -6,7 +6,6 @@ import org.example.watchfinder.dto.PasswordResetRequest;
 import org.example.watchfinder.dto.RegisterRequest;
 import org.example.watchfinder.model.User;
 import org.example.watchfinder.security.JwtUtil;
-import org.example.watchfinder.security.UserDetailsServiceImpl;
 import org.example.watchfinder.service.EmailService;
 import org.example.watchfinder.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,11 +18,12 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
+import org.springframework.security.core.GrantedAuthority;
 
 @RestController
 @RequestMapping("/auth")
@@ -110,21 +110,39 @@ public class AuthController {
                 return ResponseEntity.ok().body("Si el email existe, recibirás un correo con las instrucciones.");
             }
 
-            //genera token de autenticacion
-            Authentication authentication = new UsernamePasswordAuthenticationToken(
-                    user.get().getUsername(),
-                    null,
-                    user.get().getAuthorities()
-            );
-            //genera token de reseteo
-            String token = jwtUtil.generateToken(authentication);
+            // DEBUG   
+            System.out.println("User found: " + user.get().getUsername());
+            System.out.println("User roles: " + user.get().getRoles());
+            String roles = "ROLE_USER";  // Instead of processing the roles set
+            System.out.println("Using roles string: " + roles);
+
+            //genera token sin autenticacion, directamente con el username y los roles
+            //String roles = user.get().getRoles().stream().collect(Collectors.joining(","));
+            /*
+            String token = jwtUtil.generateTokenFromUsername(user.get().getUsername(), roles);
 
             // envía mail con el link y token
             String resetUrl = "https://WatchFinder.com/reset-password?token=" + token;
             emailService.sendPasswordResetEmail(resetRequest.getEmail(), resetUrl);
 
             return ResponseEntity.ok().body("Instrucciones para restablecer contraseña enviadas al e-mail indicado");
+            */
+            try {
+                String token = jwtUtil.generateTokenFromUsername(user.get().getUsername(), roles);
+                System.out.println("Token generated successfully");
 
+                String resetUrl = "https://WatchFinder.com/reset-password?token=" + token;
+                System.out.println("Reset URL created: " + resetUrl);
+
+                emailService.sendPasswordResetEmail(resetRequest.getEmail(), resetUrl);
+                System.out.println("Email sent successfully");
+
+                return ResponseEntity.ok().body("Instrucciones para restablecer contraseña enviadas al e-mail indicado");
+            } catch (Exception e) {
+                System.err.println("Error generating token or sending email: " + e.getMessage());
+                e.printStackTrace();
+                throw e;  // Re-throw to be caught by outer try-catch
+            }
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error: Petición de restablecimiento de contraseña ha fallado - " + e.getMessage());
