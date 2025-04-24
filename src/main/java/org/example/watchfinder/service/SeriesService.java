@@ -7,6 +7,7 @@ import java.util.Optional;
 
 public interface SeriesService {
     List<Series> showAll();
-    Optional<Series> findByTitle(String title);
-    Optional<List<Series>> findByGenresContains(String genre);
+    Optional<List<Series>> findByTitleContains(String title);
+    Optional<List<Series>> findByGenres(List<String> genres);
+    Optional<Series> findById(String id);
 }

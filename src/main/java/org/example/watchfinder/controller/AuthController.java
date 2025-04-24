@@ -10,6 +10,7 @@ import org.example.watchfinder.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -90,6 +91,9 @@ public class AuthController {
         // Si este método se ejecuta, el filtro JWT ya validó el token.
         // Authentication no será null y estará 'authenticated'.
         // Simplemente devolvemos OK. Opcionalmente, datos del usuario.
+        if (authentication == null || !authentication.isAuthenticated() || authentication instanceof AnonymousAuthenticationToken){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("No valid authentication found");
+        }
         String username = authentication.getName(); // Obtener username del token validado
         // Puedes devolver solo OK, o un objeto con datos básicos.
         return ResponseEntity.ok(Map.of("status", "valid", "username", username));
