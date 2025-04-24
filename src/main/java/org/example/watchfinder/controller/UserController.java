@@ -63,6 +63,6 @@ public class UserController {
         } else{
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ArrayList<>());
         }
-    }
+    }   
 }
 
