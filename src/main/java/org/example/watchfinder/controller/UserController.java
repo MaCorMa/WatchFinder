@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -28,15 +29,19 @@ public class UserController {
     }*/
 
     @PostMapping("/addtolist")
-    public ResponseEntity<String> addToList(@RequestBody Item item, Authentication auth) {
-        if (auth == null || !auth.isAuthenticated()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("No autorizado");
+    public ResponseEntity<?> handleAddToList(@RequestBody Item item, Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "User not authenticated")); // Devuelve JSON
         }
-        String username = auth.getName();
-        if(userService.addItem(username, item)){
-            return ResponseEntity.status(HttpStatus.CREATED).body("Item added");
+        String username = authentication.getName();
+
+        // Llama a tu método del servicio
+        boolean success = userService.addItem(username, item);
+
+        if (success) {
+            return ResponseEntity.ok().build();
         } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error adding new item");
+            return ResponseEntity.badRequest().body(Map.of("status", "error", "message", "Failed to add item"));
         }
     }
 

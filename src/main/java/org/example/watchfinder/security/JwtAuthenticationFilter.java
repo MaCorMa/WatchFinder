@@ -30,7 +30,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     //Cuando construyamos el filter chain, este filtro se lo vamos a pasar y es el que asegura que el user esté autenticado.
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
-        try{
+
             //Aqui se parsea la request, saca el token, y luego el username mediante ese token. Con ese username obitene los datos del usuario
             String jwt = parseJwt(request);
 
@@ -46,10 +46,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 //Como decirle al portero "viene conmigo"
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
-
-        } catch (Exception e){
-            e.getMessage();
-        }
         filterChain.doFilter(request, response);
     }
 
