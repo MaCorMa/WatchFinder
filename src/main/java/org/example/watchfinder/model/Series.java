@@ -26,6 +26,8 @@ public class Series {
     private List<String> Cast;
     private String Rated;
     private String Awards;
+    private String Poster;
+
 
     public String get_id() {
         return _id;
@@ -33,6 +35,14 @@ public class Series {
 
     public void set_id(String _id) {
         this._id = _id;
+    }
+
+    public String getPoster() {
+        return Poster;
+    }
+
+    public void setPoster(String poster) {
+        Poster = poster;
     }
 
     public String getTitle() {
