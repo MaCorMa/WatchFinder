@@ -28,6 +28,7 @@ public class Movie {
     private String Rated;
     private String Awards;
     private String Poster;
+    private String Url;
 
     public String get_id() {
         return _id;
@@ -35,6 +36,14 @@ public class Movie {
 
     public void set_id(String _id) {
         this._id = _id;
+    }
+
+    public String getUrl() {
+        return Url;
+    }
+
+    public void setUrl(String url) {
+        Url = url;
     }
 
     public String getPoster() {
