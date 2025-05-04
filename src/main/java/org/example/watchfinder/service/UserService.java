@@ -12,4 +12,5 @@ public interface UserService {
     public boolean existsByUsername(String username);
     public boolean existsByEmail(String email);
     public boolean addItem(String name, Item item);
+    public boolean removeItem(String name, Item item);
 }

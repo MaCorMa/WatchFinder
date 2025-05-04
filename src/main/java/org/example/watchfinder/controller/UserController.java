@@ -23,10 +23,6 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    /*@GetMapping("/getprofile")
-    public ResponseEntity<User> getProfile() {
-
-    }*/
 
     @PostMapping("/addtolist")
     public ResponseEntity<?> handleAddToList(@RequestBody Item item, Authentication authentication) {
@@ -37,6 +33,22 @@ public class UserController {
 
         // Llama a tu método del servicio
         boolean success = userService.addItem(username, item);
+
+        if (success) {
+            return ResponseEntity.ok().build();
+        } else {
+            return ResponseEntity.badRequest().body(Map.of("status", "error", "message", "Failed to add item"));
+        }
+    }
+
+    @PostMapping("/removefromlist")
+    public ResponseEntity<?> handleRemoveFromList(@RequestBody Item item, Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "User not authenticated")); // Devuelve JSON
+        }
+        String username = authentication.getName();
+
+        boolean success = userService.removeItem(username, item);
 
         if (success) {
             return ResponseEntity.ok().build();
@@ -68,6 +80,30 @@ public class UserController {
         } else{
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ArrayList<>());
         }
-    }   
+    }
+
+    @GetMapping("/getseenseries")
+    public ResponseEntity<List<Series>> getSeenSeries(Authentication auth) {
+        String username = auth.getName();
+        Optional<User> userOpt = userService.findByUsername(username);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            return ResponseEntity.status(HttpStatus.OK).body(user.getSeenSeries());
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ArrayList<>());
+        }
+    }
+
+    @GetMapping("/getseenmovies")
+    public ResponseEntity<List<Movie>> getSeenMovies(Authentication auth) {
+        String username = auth.getName();
+        Optional<User> userOpt = userService.findByUsername(username);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            return ResponseEntity.status(HttpStatus.OK).body(user.getSeenMovies());
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ArrayList<>());
+        }
+    }
 }
 

@@ -4,6 +4,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.List;
+import java.util.Objects;
 
 @Document(collection = "Series")
 public class Series {
@@ -28,6 +29,7 @@ public class Series {
     private String Awards;
     private String Poster;
     private String Url;
+    private List<String> Providers;
 
     public String get_id() {
         return _id;
@@ -36,6 +38,15 @@ public class Series {
     public void set_id(String _id) {
         this._id = _id;
     }
+
+    public List<String> getProviders() {
+        return Providers;
+    }
+
+    public void setProviders(List<String> providers) {
+        Providers = providers;
+    }
+
 
     public String getUrl() {
         return Url;
@@ -179,5 +190,17 @@ public class Series {
 
     public void setAwards(String awards) {
         Awards = awards;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        Series series = (Series) o;
+        return Objects.equals(_id, series._id) && Objects.equals(Title, series.Title) && Objects.equals(Year, series.Year) && Objects.equals(ReleaseDate, series.ReleaseDate) && Objects.equals(EndDate, series.EndDate) && Objects.equals(Status, series.Status) && Objects.equals(Seasons, series.Seasons) && Objects.equals(Director, series.Director) && Objects.equals(Country, series.Country) && Objects.equals(Plot, series.Plot) && Objects.equals(Runtime, series.Runtime) && Objects.equals(Ratings, series.Ratings) && Objects.equals(Genres, series.Genres) && Objects.equals(Languages, series.Languages) && Objects.equals(Cast, series.Cast) && Objects.equals(Rated, series.Rated) && Objects.equals(Awards, series.Awards) && Objects.equals(Poster, series.Poster) && Objects.equals(Url, series.Url) && Objects.equals(Providers, series.Providers);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(_id, Title, Year, ReleaseDate, EndDate, Status, Seasons, Director, Country, Plot, Runtime, Ratings, Genres, Languages, Cast, Rated, Awards, Poster, Url, Providers);
     }
 }

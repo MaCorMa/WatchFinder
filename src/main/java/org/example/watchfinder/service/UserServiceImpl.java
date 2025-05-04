@@ -65,19 +65,118 @@ public class UserServiceImpl implements UserService {
 
                     switch (item.getState()) {
                         case "liked":
-                            user.addToLikedMovies(movie);
-                            userRepository.save(user);
-                            return true;
+                            if (!user.getLikedMovies().contains(movie)) {
+                                user.addToLikedMovies(movie);
+                                userRepository.save(user);
+                                return true;
+                            } else {
+                                return false;
+                            }
                         case "disliked":
-                            user.addToDislikedMovies(movie);
-                            userRepository.save(user);
-                            return true;
+                            if (!user.getDislikedMovies().contains(movie)) {
+                                user.addToDislikedMovies(movie);
+                                userRepository.save(user);
+                                return true;
+                            } else {
+                                return false;
+                            }
+
                         case "seen":
-                            user.addToSeenMovies(movie);
+                            if (!user.getSeenMovies().contains(movie)) {
+                                user.addToSeenMovies(movie);
+                                userRepository.save(user);
+                                return true;
+                            } else {
+                                return false;
+                            }
+
+                        case "fav":
+                            if (!user.getFavMovies().contains(movie)) {
+                                user.addToFavMovies(movie);
+                                userRepository.save(user);
+                                return true;
+                            } else {
+                                return false;
+                            }
+
+                        default:
+                            return false;
+                    }
+                } else {
+                    return false;
+                }
+            }
+
+            if (item.getType().equals("series")) {
+                Optional<Series> optSeries = seriesRepository.findBy_id(item.getId());
+                if (optSeries.isPresent()) {
+                    Series series = optSeries.get();
+
+                    switch (item.getState()) {
+                        case "liked":
+                            if (!user.getLikedSeries().contains(series)) {
+                                user.addToLikedSeries(series);
+                                userRepository.save(user);
+                                return true;
+                            } else {
+                                return false;
+                            }
+                        case "disliked":
+                            if (!user.getDislikedSeries().contains(series)) {
+                                user.addToDislikedSeries(series);
+                                userRepository.save(user);
+                                return true;
+                            } else {
+                                return false;
+                            }
+                        case "seen":
+                            if (!user.getSeenSeries().contains(series)) {
+                                user.addToSeenSeries(series);
+                                userRepository.save(user);
+                                return true;
+                            } else {
+                                return false;
+                            }
+                        case "fav":
+                            if (!user.getFavSeries().contains(series)) {
+                                user.addToFavSeries(series);
+                                userRepository.save(user);
+                                return true;
+                            } else {
+                                return false;
+                            }
+                        default:
+                            return false;
+                    }
+                } else {
+                    return false;
+                }
+            }
+        } else {
+            return false;
+        }
+
+        return false;
+    }
+
+    @Override
+    public boolean removeItem(String name, Item item) {
+        Optional<User> opt = userRepository.findByUsername(name);
+        if (opt.isPresent()) {
+            User user = opt.get();
+
+            if (item.getType().equals("movie")) {
+                Optional<Movie> optMovie = movieRepository.findBy_id(item.getId());
+                if (optMovie.isPresent()) {
+                    Movie movie = optMovie.get();
+
+                    switch (item.getState()) {
+                        case "seen":
+                            user.removeFromSeenMovies(movie);
                             userRepository.save(user);
                             return true;
                         case "fav":
-                            user.addToFavMovies(movie);
+                            user.removeFromFavMovies(movie);
                             userRepository.save(user);
                             return true;
                         default:
@@ -93,20 +192,12 @@ public class UserServiceImpl implements UserService {
                     Series series = optSeries.get();
 
                     switch (item.getState()) {
-                        case "liked":
-                            user.addToLikedSeries(series);
-                            userRepository.save(user);
-                            return true;
-                        case "disliked":
-                            user.addToDislikedSeries(series);
-                            userRepository.save(user);
-                            return true;
                         case "seen":
-                            user.addToSeenSeries(series);
+                            user.removeFromSeenSeries(series);
                             userRepository.save(user);
                             return true;
                         case "fav":
-                            user.addToFavSeries(series);
+                            user.removeFromFavSeries(series);
                             userRepository.save(user);
                             return true;
                         default:

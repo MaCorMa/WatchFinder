@@ -33,7 +33,8 @@ public class User implements UserDetails {
     private List<String> achievements = new ArrayList<>();
     private Set<String> roles;
 
-    public User() {}
+    public User() {
+    }
 
     public User(String username, String name, String password, String email) {
         this.name = name;
@@ -45,36 +46,63 @@ public class User implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return this.roles.stream()
-                .map(role -> new SimpleGrantedAuthority("ROLE_"+role))
+                .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
                 .collect(Collectors.toList());
     }
 
-    public void addToLikedMovies(Movie movie){
+
+    public void addToLikedMovies(Movie movie) {
         this.likedMovies.add(movie);
     }
-    public void addToLikedSeries(Series series){
+
+    public void addToLikedSeries(Series series) {
         this.likedSeries.add(series);
     }
 
-    public void addToDislikedMovies(Movie movie){
+
+
+    public void addToDislikedMovies(Movie movie) {
         this.dislikedMovies.add(movie);
     }
-    public void addToDislikedSeries(Series series){
+
+    public void addToDislikedSeries(Series series) {
         this.dislikedSeries.add(series);
     }
 
-    public void addToSeenMovies(Movie movie){
+
+
+    public void addToSeenMovies(Movie movie) {
         this.seenMovies.add(movie);
     }
-    public void addToSeenSeries(Series series){
+
+    public void addToSeenSeries(Series series) {
         this.seenSeries.add(series);
     }
 
-    public void addToFavMovies(Movie movie){
+
+
+    public void addToFavMovies(Movie movie) {
         this.favMovies.add(movie);
     }
-    public void addToFavSeries(Series series){
+
+    public void addToFavSeries(Series series) {
         this.favSeries.add(series);
+    }
+
+
+
+    public void removeFromSeenMovies(Movie movie) {
+        this.seenMovies.remove(movie);
+    }
+
+    public void removeFromSeenSeries(Series series) {
+        this.seenSeries.remove(series);
+    }
+    public void removeFromFavMovies(Movie movie) {
+        this.favMovies.remove(movie);
+    }
+    public void removeFromFavSeries(Series series) {
+        this.favSeries.remove(series);
     }
 
     @Override
