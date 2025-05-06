@@ -172,4 +172,23 @@ public class UserServiceImpl implements UserService {
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
     }
+
+    @Override
+    public void updateProfileImageUrl(String username, String imageUrl) {
+        Optional<User> userOpt = userRepository.findByUsername(username);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            user.setProfileImageUrl(imageUrl);
+            userRepository.save(user);
+        }
+    }
+
+    public boolean deleteUser(String userName) {
+        Optional<User> user = userRepository.findByUsername(userName);
+        if (user.isPresent()) {
+            userRepository.delete(user.get());
+            return true;
+        }
+        return false;
+    }
 }

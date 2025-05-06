@@ -72,7 +72,8 @@ public class JwtUtil {
         } catch (Exception e) {
             System.err.println("Error generating token: " + e.getMessage());
             e.printStackTrace();
-            throw e;
+            //throw e;
+            throw new RuntimeException("Failed to generate token", e);
         }
     }
 
@@ -96,10 +97,21 @@ public class JwtUtil {
             parser.parseSignedClaims(authToken);
             return true;
 
+        } catch (SignatureException ex) {
+            System.err.println("Invalid JWT signature: " + ex.getMessage());
+        } catch (MalformedJwtException ex) {
+            System.err.println("Invalid JWT token: " + ex.getMessage());
+        } catch (ExpiredJwtException ex) {
+            System.err.println("JWT token is expired: " + ex.getMessage());
+        } catch (UnsupportedJwtException ex) {
+            System.err.println("JWT token is unsupported: " + ex.getMessage());
+        } catch (IllegalArgumentException ex) {
+            System.err.println("JWT claims string is empty: " + ex.getMessage());
         } catch (Exception e) {
-            throw new RuntimeException(e);
-
+            // Catch any other unexpected exception during parsing/validation
+            System.err.println("An unexpected error occurred during JWT validation: " + e.getMessage());
+            e.printStackTrace();
         }
-
+        return false; // Token is invalid due to one of the caught exceptions
     }
 }

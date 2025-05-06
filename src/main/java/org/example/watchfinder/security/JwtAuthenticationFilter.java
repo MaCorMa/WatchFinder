@@ -48,7 +48,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
 
         } catch (Exception e){
-            e.getMessage();
+            // MODIFICACIÓN: Imprimir la traza completa de la excepción para diagnosticar
+            System.err.println("Error processing JWT authentication: " + e.getMessage());
+            e.printStackTrace(); // Esto imprimirá la pila de llamadas completa en los logs del backend.
+            // No lanzar la excepción aquí permite que la cadena de filtros continúe,
+            // lo que eventualmente llevará al 401 por la regla .authenticated()
         }
         filterChain.doFilter(request, response);
     }

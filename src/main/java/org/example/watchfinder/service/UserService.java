@@ -19,4 +19,9 @@ public interface UserService {
     boolean validatePasswordResetToken(String token);
     Optional<User> getUserByPasswordResetToken(String token);
     void changePassword(User user, String newPassword);
+    void updateProfileImageUrl(String username, String imageUrl);
+
+
+    //Delete user
+    boolean deleteUser(String userName);
 }

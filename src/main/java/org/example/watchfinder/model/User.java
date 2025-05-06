@@ -18,7 +18,6 @@ public class User implements UserDetails {
 
     @Id
     private String _id;
-    private String name;
     private String username;
     private String password;
     private String email;
@@ -30,8 +29,8 @@ public class User implements UserDetails {
     private List<Series> seenSeries = new ArrayList<>();
     private List<Movie> favMovies = new ArrayList<>();
     private List<Series> favSeries = new ArrayList<>();
-    private List<String> achievements = new ArrayList<>();
     private Set<String> roles;
+    private String profileImageUrl;
 
     public User() {}
 
@@ -86,13 +85,7 @@ public class User implements UserDetails {
         return this.username;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
+    public void setUsername(String username) {this.username = username;}
 
     public void setPassword(String password) {this.password = password; }
 
@@ -168,20 +161,20 @@ public class User implements UserDetails {
         this.favSeries = favSeries;
     }
 
-    public List<String> getAchievements() {
-        return achievements;
-    }
-
-    public void setAchievements(List<String> achievements) {
-        this.achievements = achievements;
-    }
-
     public Set<String> getRoles() {
         return roles;
     }
 
     public void setRoles(Set<String> roles) {
         this.roles = roles;
+    }
+    
+    public String getProfileImageUrl() {
+        return profileImageUrl;
+    }
+
+    public void setProfileImageUrl(String profileImageUrl) {
+        this.profileImageUrl = profileImageUrl;
     }
 }
 

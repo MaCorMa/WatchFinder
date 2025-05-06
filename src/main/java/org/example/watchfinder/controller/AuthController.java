@@ -1,9 +1,6 @@
 package org.example.watchfinder.controller;
 
-import org.example.watchfinder.dto.LoginRequest;
-import org.example.watchfinder.dto.LoginResponse;
-import org.example.watchfinder.dto.PasswordResetRequest;
-import org.example.watchfinder.dto.RegisterRequest;
+import org.example.watchfinder.dto.*;
 import org.example.watchfinder.model.User;
 import org.example.watchfinder.security.JwtUtil;
 import org.example.watchfinder.service.EmailService;
@@ -22,8 +19,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
-import org.springframework.security.core.GrantedAuthority;
+
 
 @RestController
 @RequestMapping("/auth")
@@ -116,22 +112,11 @@ public class AuthController {
             String roles = "ROLE_USER";  // Instead of processing the roles set
             System.out.println("Using roles string: " + roles);
 
-            //genera token sin autenticacion, directamente con el username y los roles
-            //String roles = user.get().getRoles().stream().collect(Collectors.joining(","));
-            /*
-            String token = jwtUtil.generateTokenFromUsername(user.get().getUsername(), roles);
-
-            // envía mail con el link y token
-            String resetUrl = "https://WatchFinder.com/reset-password?token=" + token;
-            emailService.sendPasswordResetEmail(resetRequest.getEmail(), resetUrl);
-
-            return ResponseEntity.ok().body("Instrucciones para restablecer contraseña enviadas al e-mail indicado");
-            */
             try {
                 String token = jwtUtil.generateTokenFromUsername(user.get().getUsername(), roles);
                 System.out.println("Token generated successfully");
 
-                String resetUrl = "https://WatchFinder.com/reset-password?token=" + token;
+                String resetUrl = "https://watchfinderapp.com/reset-password?token=" + token;
                 System.out.println("Reset URL created: " + resetUrl);
 
                 emailService.sendPasswordResetEmail(resetRequest.getEmail(), resetUrl);
@@ -159,22 +144,25 @@ public class AuthController {
             }
 
             String username = jwtUtil.getUserNameFromJwtToken(resetRequest.getToken());
-            Optional<User> user = userService.findByUsername(username);
 
-            if (!user.isPresent()) {
+            Optional<User> userOpt = userService.findByUsername(username);
+
+            if (!userOpt.isPresent()) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .body("Error: User not found");
             }
 
+            User user = userOpt.get();
+
             // reset contraseña
-            user.get().setPassword(passwordEncoder.encode(resetRequest.getNewPassword()));
-            userService.updateUser(user.get());
+            user.setPassword(passwordEncoder.encode(resetRequest.getNewPassword()));
+            userService.updateUser(user);
 
             // nuevo token autenticación
             Authentication authentication = new UsernamePasswordAuthenticationToken(
-                    username,
+                    user,
                     null,
-                    user.get().getAuthorities()
+                    user.getAuthorities()
             );
 
             // nuevo token jwt
@@ -184,6 +172,35 @@ public class AuthController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error: Password reset failed - " + e.getMessage());
+        }
+    }
+
+    //cambio contraseña desde perfil (con el user autenticado)
+    @PostMapping("/change-password")
+    public ResponseEntity<?> changePassword(@RequestBody ChangePasswordRequest request, Authentication authentication) {
+        try {
+            String username = authentication.getName();
+            Optional<User> userOpt = userService.findByUsername(username);
+
+            if (!userOpt.isPresent()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Error: User not found");
+            }
+
+            User user = userOpt.get();
+
+            // Comprueba la contraseña actual
+            if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Error: Invalid current password");
+            }
+
+            // Cambia la contraseña
+            userService.changePassword(user, request.getNewPassword());
+
+            return ResponseEntity.ok("Password changed successfully");
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error: Failed to change password - " + e.getMessage());
         }
     }
 }

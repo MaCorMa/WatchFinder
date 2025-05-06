@@ -34,3 +34,6 @@ build/
 
 ### .env
 .env
+
+###JSON GCS
+src/main/resources/named-catcher-458516-j2-c9384dcd99e7.json
