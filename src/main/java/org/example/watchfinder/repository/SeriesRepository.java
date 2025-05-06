@@ -14,4 +14,6 @@ public interface SeriesRepository extends MongoRepository<Series, String> {
     Optional<List<Series>> findByTitleContains(String title);
     @Query("{ 'Genres': { $all: ?0 } }")
     Optional<List<Series>> findByGenres(List<String> genres);
+    @Query("{ '_id' : { $nin: ?0 } }")
+    List<Series> findByIdNotIn(List<String> excludedIds);
 }

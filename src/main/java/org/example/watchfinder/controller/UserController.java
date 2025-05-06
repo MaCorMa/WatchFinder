@@ -4,6 +4,7 @@ import org.example.watchfinder.dto.Item;
 import org.example.watchfinder.model.Movie;
 import org.example.watchfinder.model.Series;
 import org.example.watchfinder.model.User;
+import org.example.watchfinder.service.MovieService;
 import org.example.watchfinder.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -11,10 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @RestController
 @RequestMapping("/users")
@@ -104,6 +102,30 @@ public class UserController {
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ArrayList<>());
         }
+    }
+
+    @GetMapping("/recommendmovies") // O como lo hayas llamado
+    public ResponseEntity<List<Movie>> getMovieRecommendationsEndpoint(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.emptyList());
+        }
+        String username = authentication.getName();
+        List<Movie> recommendations = userService.getMovieRecommendations(username);
+        return ResponseEntity.ok(recommendations);
+    }
+
+    // En UserController.java (o RecommendationController.java)
+
+// ... (otros endpoints y Autowired de userService) ...
+
+    @GetMapping("/recommendseries")
+    public ResponseEntity<List<Series>> getSeriesRecommendationsEndpoint(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.emptyList());
+        }
+        String username = authentication.getName();
+        List<Series> recommendations = userService.getSeriesRecommendations(username);
+        return ResponseEntity.ok(recommendations);
     }
 }
 

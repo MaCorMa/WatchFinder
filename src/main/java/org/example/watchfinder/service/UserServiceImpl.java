@@ -10,7 +10,8 @@ import org.example.watchfinder.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -214,4 +215,224 @@ public class UserServiceImpl implements UserService {
     }
 
 
+    @Override
+    public List<Movie> getMovieRecommendations(String username) {
+        Optional<User> userOpt = userRepository.findByUsername(username);
+        if (!userOpt.isPresent()) {
+            return Collections.emptyList(); // Si el usuario no existe, no hay recomendaciones
+        }
+        User user = userOpt.get();
+
+        // 1. Recopilar IDs de películas a excluir
+        Set<String> excludedMovieIds = new HashSet<>();
+        if (user.getSeenMovies() != null) {
+            user.getSeenMovies().stream().map(Movie::get_id).forEach(excludedMovieIds::add);
+        }
+        if (user.getFavMovies() != null) {
+            user.getFavMovies().stream().map(Movie::get_id).forEach(excludedMovieIds::add);
+        }
+        if (user.getLikedMovies() != null) { // Asumiendo que User tiene getLikedMovies()
+            user.getLikedMovies().stream().map(Movie::get_id).forEach(excludedMovieIds::add);
+        }
+        if (user.getDislikedMovies() != null) { // Asumiendo que User tiene getDislikedMovies()
+            user.getDislikedMovies().stream().map(Movie::get_id).forEach(excludedMovieIds::add);
+        }
+
+        // 2. Obtener películas candidatas (no vistas, no fav, no liked, no disliked)
+        List<Movie> candidateMovies = movieRepository.findByIdNotIn(new ArrayList<>(excludedMovieIds));
+        if (candidateMovies.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        // 3. Calcular el perfil de géneros del usuario
+        Map<String, Double> userGenreScores = new HashMap<>();
+        // Puntos por películas favoritas
+        if (user.getFavMovies() != null) {
+            for (Movie movie : user.getFavMovies()) {
+                if (movie.getGenres() != null) {
+                    for (String genre : movie.getGenres()) {
+                        userGenreScores.put(genre, userGenreScores.getOrDefault(genre, 0.0) + 2.0);
+                    }
+                }
+            }
+        }
+        // Puntos por películas que le gustaron
+        if (user.getLikedMovies() != null) { // Asumiendo getLikedMovies()
+            for (Movie movie : user.getLikedMovies()) {
+                if (movie.getGenres() != null) {
+                    for (String genre : movie.getGenres()) {
+                        userGenreScores.put(genre, userGenreScores.getOrDefault(genre, 0.0) + 1.0);
+                    }
+                }
+            }
+        }
+        // (Opcional) Restar puntos por películas que no le gustaron
+        if (user.getDislikedMovies() != null) { // Asumiendo getDislikedMovies()
+            for (Movie movie : user.getDislikedMovies()) {
+                if (movie.getGenres() != null) {
+                    for (String genre : movie.getGenres()) {
+                        userGenreScores.put(genre, userGenreScores.getOrDefault(genre, 0.0) - 1.0);
+                    }
+                }
+            }
+        }
+
+        List<ScoredMovie> scoredCandidates = new ArrayList<>();
+        for (Movie candidate : candidateMovies) {
+            double candidateScore = 0.0;
+            if (candidate.getGenres() != null) {
+                for (String genre : candidate.getGenres()) {
+                    candidateScore += userGenreScores.getOrDefault(genre, 0.0);
+                }
+            }
+            // Solo considerar recomendar si la puntuación es positiva
+            if (candidateScore > 0) {
+                scoredCandidates.add(new ScoredMovie(candidate, candidateScore));
+            }
+        }
+
+        if (scoredCandidates.isEmpty()) {
+            return Collections.emptyList(); // No hay candidatos con puntuación positiva
+        }
+
+        // 5. Ordenar los candidatos por puntuación (de mayor a menor)
+        scoredCandidates.sort((s1, s2) -> Double.compare(s2.getScore(), s1.getScore()));
+
+        // 6. Extraer las películas ordenadas
+        List<Movie> finalRecommendations = scoredCandidates.stream()
+                .map(ScoredMovie::getMovie)
+                .collect(Collectors.toList());
+
+        // 7. Limitar el número de recomendaciones (ej. las 20 mejores)
+        int limit = 5;
+        return finalRecommendations.subList(0, Math.min(finalRecommendations.size(), limit));
+    }
+
+    private static class ScoredMovie {
+        private final Movie movie;
+        private final double score;
+
+        public ScoredMovie(Movie movie, double score) {
+            this.movie = movie;
+            this.score = score;
+        }
+
+        public Movie getMovie() {
+            return movie;
+        }
+
+        public double getScore() {
+            return score;
+        }
+    }
+
+
+
+    @Override
+    public List<Series> getSeriesRecommendations(String username) {
+        Optional<User> userOpt = userRepository.findByUsername(username);
+        if (!userOpt.isPresent()) {
+            return Collections.emptyList();
+        }
+        User user = userOpt.get();
+
+        // 1. Recopilar IDs de series a excluir
+        Set<String> excludedSeriesIds = new HashSet<>();
+        if (user.getSeenSeries() != null) {
+            user.getSeenSeries().stream().map(Series::get_id).forEach(excludedSeriesIds::add);
+        }
+        if (user.getFavSeries() != null) {
+            user.getFavSeries().stream().map(Series::get_id).forEach(excludedSeriesIds::add);
+        }
+        if (user.getLikedSeries() != null) {
+            user.getLikedSeries().stream().map(Series::get_id).forEach(excludedSeriesIds::add);
+        }
+        if (user.getDislikedSeries() != null) {
+            user.getDislikedSeries().stream().map(Series::get_id).forEach(excludedSeriesIds::add);
+        }
+
+        // 2. Obtener series candidatas
+        List<Series> candidateSeries = seriesRepository.findByIdNotIn(new ArrayList<>(excludedSeriesIds));
+        if (candidateSeries.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        // 3. Calcular el perfil de géneros del usuario para series
+        Map<String, Double> userGenreScores = new HashMap<>();
+        if (user.getFavSeries() != null) {
+            for (Series series : user.getFavSeries()) {
+                if (series.getGenres() != null) {
+                    for (String genre : series.getGenres()) {
+                        userGenreScores.put(genre, userGenreScores.getOrDefault(genre, 0.0) + 2.0);
+                    }
+                }
+            }
+        }
+        if (user.getLikedSeries() != null) {
+            for (Series series : user.getLikedSeries()) {
+                if (series.getGenres() != null) {
+                    for (String genre : series.getGenres()) {
+                        userGenreScores.put(genre, userGenreScores.getOrDefault(genre, 0.0) + 1.0);
+                    }
+                }
+            }
+        }
+        if (user.getDislikedSeries() != null) {
+            for (Series series : user.getDislikedSeries()) {
+                if (series.getGenres() != null) {
+                    for (String genre : series.getGenres()) {
+                        userGenreScores.put(genre, userGenreScores.getOrDefault(genre, 0.0) - 1.0);
+                    }
+                }
+            }
+        }
+
+        // 4. Puntuar las series candidatas
+        List<ScoredSeries> scoredCandidates = new ArrayList<>();
+        for (Series candidate : candidateSeries) {
+            double candidateScore = 0.0;
+            if (candidate.getGenres() != null) {
+                for (String genre : candidate.getGenres()) {
+                    candidateScore += userGenreScores.getOrDefault(genre, 0.0);
+                }
+            }
+            if (candidateScore > 0) {
+                scoredCandidates.add(new ScoredSeries(candidate, candidateScore));
+            }
+        }
+
+        if (scoredCandidates.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        // 5. Ordenar los candidatos por puntuación
+        scoredCandidates.sort((s1, s2) -> Double.compare(s2.getScore(), s1.getScore()));
+
+        // 6. Extraer las series ordenadas
+        List<Series> finalRecommendations = scoredCandidates.stream()
+                .map(ScoredSeries::getSeries)
+                .collect(Collectors.toList());
+
+        // 7. Limitar el número de recomendaciones
+        int limit = 5;
+        return finalRecommendations.subList(0, Math.min(finalRecommendations.size(), limit));
+    }
+
+    private static class ScoredSeries {
+        private final Series series;
+        private final double score;
+
+        public ScoredSeries(Series series, double score) {
+            this.series = series;
+            this.score = score;
+        }
+
+        public Series getSeries() {
+            return series;
+        }
+
+        public double getScore() {
+            return score;
+        }
+    }
 }

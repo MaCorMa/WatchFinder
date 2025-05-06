@@ -14,5 +14,7 @@ public interface MovieRepository extends MongoRepository<Movie, String> {
     Optional<List<Movie>> findByTitleContains(String title);
     @Query("{ 'Genres': { $all: ?0 } }")
     Optional<List<Movie>> findByGenres(List<String> genres);
+    @Query("{ '_id' : { $nin: ?0 } }")
+    List<Movie> findByIdNotIn(List<String> excludedIds);
 
 }
