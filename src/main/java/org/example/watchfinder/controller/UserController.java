@@ -8,6 +8,10 @@ import org.example.watchfinder.dto.ProfileImageUpdateResponse;
 import org.example.watchfinder.dto.UserData;
 import org.example.watchfinder.model.User;
 import org.example.watchfinder.security.JwtUtil;
+import org.example.watchfinder.model.Movie;
+import org.example.watchfinder.model.Series;
+import org.example.watchfinder.model.User;
+import org.example.watchfinder.service.MovieService;
 import org.example.watchfinder.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +33,8 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 
+
+import java.util.*;
 
 @RestController
 @RequestMapping("/users")
@@ -111,17 +117,48 @@ public class UserController {
 
 
 
-
     @PostMapping("/addtolist")
-    public ResponseEntity<String> addToList(@RequestBody Item item, Authentication auth) {
-        if (auth == null || !auth.isAuthenticated()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("No autorizado");
+    public ResponseEntity<?> handleAddToList(@RequestBody Item item, Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "User not authenticated")); // Devuelve JSON
         }
-        String username = auth.getName();
-        if(userService.addItem(username, item)){
-            return ResponseEntity.status(HttpStatus.CREATED).body("Item added");
+        String username = authentication.getName();
+
+        // Llama a tu método del servicio
+        boolean success = userService.addItem(username, item);
+
+        if (success) {
+            return ResponseEntity.ok().build();
         } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error adding new item");
+            return ResponseEntity.badRequest().body(Map.of("status", "error", "message", "Failed to add item"));
+        }
+    }
+
+    @PostMapping("/removefromlist")
+    public ResponseEntity<?> handleRemoveFromList(@RequestBody Item item, Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "User not authenticated")); // Devuelve JSON
+        }
+        String username = authentication.getName();
+
+        boolean success = userService.removeItem(username, item);
+
+        if (success) {
+            return ResponseEntity.ok().build();
+        } else {
+            return ResponseEntity.badRequest().body(Map.of("status", "error", "message", "Failed to add item"));
+        }
+    }
+
+    @GetMapping("/getfavmovies")
+    public ResponseEntity<List<Movie>> getFavMovies(Authentication auth) {
+        String username = auth.getName();
+        Optional<User> userOpt = userService.findByUsername(username);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            return ResponseEntity.status(HttpStatus.OK).body(user.getFavMovies());
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ArrayList<>());
         }
     }
 
@@ -328,5 +365,64 @@ public class UserController {
         }
     }
 
+    @GetMapping("/getfavseries")
+    public ResponseEntity<List<Series>> getFavSeries(Authentication auth) {
+        String username = auth.getName();
+        Optional<User> userOpt = userService.findByUsername(username);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            return ResponseEntity.status(HttpStatus.OK).body(user.getFavSeries());
+        } else{
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ArrayList<>());
+        }
+    }
+
+    @GetMapping("/getseenseries")
+    public ResponseEntity<List<Series>> getSeenSeries(Authentication auth) {
+        String username = auth.getName();
+        Optional<User> userOpt = userService.findByUsername(username);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            return ResponseEntity.status(HttpStatus.OK).body(user.getSeenSeries());
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ArrayList<>());
+        }
+    }
+
+    @GetMapping("/getseenmovies")
+    public ResponseEntity<List<Movie>> getSeenMovies(Authentication auth) {
+        String username = auth.getName();
+        Optional<User> userOpt = userService.findByUsername(username);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            return ResponseEntity.status(HttpStatus.OK).body(user.getSeenMovies());
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ArrayList<>());
+        }
+    }
+
+    @GetMapping("/recommendmovies") // O como lo hayas llamado
+    public ResponseEntity<List<Movie>> getMovieRecommendationsEndpoint(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.emptyList());
+        }
+        String username = authentication.getName();
+        List<Movie> recommendations = userService.getMovieRecommendations(username);
+        return ResponseEntity.ok(recommendations);
+    }
+
+    // En UserController.java (o RecommendationController.java)
+
+// ... (otros endpoints y Autowired de userService) ...
+
+    @GetMapping("/recommendseries")
+    public ResponseEntity<List<Series>> getSeriesRecommendationsEndpoint(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.emptyList());
+        }
+        String username = authentication.getName();
+        List<Series> recommendations = userService.getSeriesRecommendations(username);
+        return ResponseEntity.ok(recommendations);
+    }
 }
 

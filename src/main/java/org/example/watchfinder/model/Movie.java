@@ -8,6 +8,7 @@ import javax.annotation.processing.Generated;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 @Document(collection = "Movies")
 public class Movie {
@@ -27,6 +28,9 @@ public class Movie {
     private List<String> Cast;
     private String Rated;
     private String Awards;
+    private String Poster;
+    private String Url;
+    private List<String> Providers;
 
     public String get_id() {
         return _id;
@@ -34,6 +38,30 @@ public class Movie {
 
     public void set_id(String _id) {
         this._id = _id;
+    }
+
+    public List<String> getProviders() {
+        return Providers;
+    }
+
+    public void setProviders(List<String> providers) {
+        Providers = providers;
+    }
+
+    public String getUrl() {
+        return Url;
+    }
+
+    public void setUrl(String url) {
+        Url = url;
+    }
+
+    public String getPoster() {
+        return Poster;
+    }
+
+    public void setPoster(String poster) {
+        Poster = poster;
     }
 
     public String getTitle() {
@@ -138,5 +166,17 @@ public class Movie {
 
     public void setAwards(String awards) {
         Awards = awards;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        Movie movie = (Movie) o;
+        return Year == movie.Year && Objects.equals(_id, movie._id) && Objects.equals(Title, movie.Title) && Objects.equals(ReleaseDate, movie.ReleaseDate) && Objects.equals(Director, movie.Director) && Objects.equals(Country, movie.Country) && Objects.equals(Plot, movie.Plot) && Objects.equals(Runtime, movie.Runtime) && Objects.equals(Ratings, movie.Ratings) && Objects.equals(Genres, movie.Genres) && Objects.equals(Languages, movie.Languages) && Objects.equals(Cast, movie.Cast) && Objects.equals(Rated, movie.Rated) && Objects.equals(Awards, movie.Awards) && Objects.equals(Poster, movie.Poster) && Objects.equals(Url, movie.Url) && Objects.equals(Providers, movie.Providers);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(_id, Title, Year, ReleaseDate, Director, Country, Plot, Runtime, Ratings, Genres, Languages, Cast, Rated, Awards, Poster, Url, Providers);
     }
 }
