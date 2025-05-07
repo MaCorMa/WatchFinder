@@ -69,20 +69,28 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody RegisterRequest registerRequest) {
 
+        // Log de entrada
+        System.out.println("AuthController - /register: Iniciando registro de usuario");
+        System.out.println("AuthController - /register: Datos recibidos - Username: " + registerRequest.getUsername() + ", Email: " + registerRequest.getEmail());
+        
         if(userService.existsByUsername(registerRequest.getUsername()) || userService.existsByEmail(registerRequest.getEmail())) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Error: Username is already in use");
         }
 
-        User user = new User(registerRequest.getUsername(), registerRequest.getName(), passwordEncoder.encode(registerRequest.getPassword()), registerRequest.getEmail());
+        User user = new User(registerRequest.getUsername(), passwordEncoder.encode(registerRequest.getPassword()), registerRequest.getEmail());
         Set<String> defaultRoles = new HashSet<>();
         defaultRoles.add("USER");
         user.setRoles(defaultRoles);
 
         try{
+            System.out.println("AuthController - /register: Intentando registrar usuario en la base de datos");
             userService.registerUser(user);
+            System.out.println("AuthController - /register: Usuario registrado exitosamente");
 
             return ResponseEntity.status(HttpStatus.CREATED).body("User registered successfully");
         } catch (Exception e) {
+            System.err.println("AuthController - /register: Error al registrar usuario - " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + e.getMessage());
         }
     }

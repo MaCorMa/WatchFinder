@@ -41,17 +41,6 @@ public class JwtUtil {
     }
 
     public String generateTokenFromUsername(String username, String roles) {
-       /*
-        Date now = new Date();
-        Date expire = new Date(now.getTime() + jwtExpirationInMs);
-        return Jwts.builder()
-                .subject(username)
-                .claim("roles", roles)
-                .issuedAt(now)
-                .expiration(expire)
-                .signWith(key())
-                .compact();
-        */
         try {
             System.out.println("Generating token for username: " + username);
             System.out.println("With roles: " + roles);

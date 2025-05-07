@@ -43,6 +43,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User registerUser(User user) {
+
         if (userRepository.existsByEmail(user.getEmail()) || userRepository.existsByUsername(user.getUsername())) {
             return null;
         } else {
@@ -283,6 +284,8 @@ public class UserServiceImpl implements UserService {
             return true;
         }
         return false;
+    }
+
     public List<Movie> getMovieRecommendations(String username) {
         Optional<User> userOpt = userRepository.findByUsername(username);
         if (!userOpt.isPresent()) {

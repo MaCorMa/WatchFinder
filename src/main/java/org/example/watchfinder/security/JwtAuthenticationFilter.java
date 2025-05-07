@@ -26,34 +26,29 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         this.userDetailsService = userDetailsService;
     }
 
+    
     @Override
-    //Cuando construyamos el filter chain, este filtro se lo vamos a pasar y es el que asegura que el user esté autenticado.
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        final String requestURI = request.getRequestURI();
+        System.out.println("JwtAuthenticationFilter - doFilterInternal: Request to " + requestURI);
 
-
-            //Aqui se parsea la request, saca el token, y luego el username mediante ese token. Con ese username obitene los datos del usuario
-            String jwt = parseJwt(request);
-
-            if(jwt != null && jwtUtil.validateToken(jwt)){
-                String username = jwtUtil.getUserNameFromJwtToken(jwt);
-                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-
-                //Aquí creamos el objeto este, le pasamos los datos del usuario, las credencialles en null porque ya hemos validado el token, y los roles (porque lo dice spring)
-                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                //Esto extrae datos adicionales, como la IP
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                //Una vez está a punto, le decimos a Spring "para esta petición, este user está autenticado y tiene X permisos"
-                //Como decirle al portero "viene conmigo"
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-            }
-
-        } catch (Exception e){
-            // MODIFICACIÓN: Imprimir la traza completa de la excepción para diagnosticar
-            System.err.println("Error processing JWT authentication: " + e.getMessage());
-            e.printStackTrace(); // Esto imprimirá la pila de llamadas completa en los logs del backend.
-            // No lanzar la excepción aquí permite que la cadena de filtros continúe,
-            // lo que eventualmente llevará al 401 por la regla .authenticated()
+        // Excluir /auth/register y /auth/login de la verificación del token
+        if (requestURI.startsWith("/auth/register") || requestURI.startsWith("/auth/login") || requestURI.startsWith("/auth/forgot-password") || requestURI.startsWith("/auth/reset-password")) {
+            filterChain.doFilter(request, response); // Permitir que la petición continúe sin verificar el token
+            return;
         }
+
+        String jwt = parseJwt(request);
+
+        if (jwt != null && jwtUtil.validateToken(jwt)) {
+            String username = jwtUtil.getUserNameFromJwtToken(jwt);
+            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+
+            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+            authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+        }
+
         filterChain.doFilter(request, response);
     }
 

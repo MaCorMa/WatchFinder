@@ -16,6 +16,7 @@ public interface UserService {
     public boolean existsByUsername(String username);
     public boolean existsByEmail(String email);
     public boolean addItem(String name, Item item);
+    boolean removeItem(String name, Item item);
 
     //Para reset contraseña
     void createPasswordResetToken(User user, String token);
@@ -27,15 +28,8 @@ public interface UserService {
 
     //Delete user
     boolean deleteUser(String userName);
-    User updateUser(User user);
-    User registerUser(User user);
-    Optional<User> findByUsername(String username);
-    boolean existsByUsername(String username);
-    boolean existsByEmail(String email);
-    boolean addItem(String name, Item item);
-    boolean removeItem(String name, Item item);
-    List<Movie> getMovieRecommendations(String username);
 
-    // --- NUEVO MÉTODO DE RECOMENDACIÓN PARA SERIES ---
+
+    List<Movie> getMovieRecommendations(String username);
     List<Series> getSeriesRecommendations(String username);
 }
